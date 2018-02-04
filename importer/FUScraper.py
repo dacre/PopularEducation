@@ -3,7 +3,7 @@
 
 # this gets all events including dates of open seminars at FolkUniversitetet
 
-from urllib.request import urlopen
+import urllib.request as request
 from bs4 import BeautifulSoup
 import datetime
 
@@ -36,9 +36,8 @@ def convert_swedish_month(month):
     }[month]
 
 
-
 def get_events():
-    html = urlopen(scrape_url).read()
+    html = request.urlopen(scrape_url).read()
     soup = BeautifulSoup(html, 'html.parser')
     table = soup.find('div', {"class": "nfu-course-list"})
     rows = table.find_all('div', {"class": "medium-10 columns"})

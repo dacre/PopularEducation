@@ -2,11 +2,28 @@
 # -*- coding: UTF-8 -*-
 
 # this handles the web site's paths
+from datetime import datetime
 
-import SUScraper
-import FUScraper
+import os
+import csv
 from flask import Flask
 app = Flask(__name__)
+
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+database_filename = os.path.join(__location__, 'db/db.csv')
+
+
+def get_events():
+    events = []
+    with open(database_filename, 'rt', encoding="utf-8") as csv_file:
+        db_reader = csv.DictReader(csv_file)
+        for row in db_reader:
+            event = {'location': row['location'],
+                     'date': row['date'],
+                     'title': row['title'],
+                     'link': row['link']}
+            events.append(event)
+    return events
 
 
 @app.route('/')
@@ -20,14 +37,12 @@ def hello_world():
                                 <th>Titel</th> 
                             </tr>
                             """
-    events = SUScraper.get_events() + FUScraper.get_events()
-    from operator import itemgetter
-    sorted_events = sorted(events, key=itemgetter('date'))
+    events = get_events()
 
-    for seminar in sorted_events:
+    for seminar in events:
         seminar_listing = seminar_listing + "<tr>"
         seminar_listing = seminar_listing + "<td>" + seminar['location'] + "</td>"
-        seminar_listing = seminar_listing + "<td>" + seminar['date'].strftime("%y-%m-%d") + "</td>"
+        seminar_listing = seminar_listing + "<td>" + seminar['date'] + "</td>"
         seminar_listing = seminar_listing + "<td><a href='" + seminar['link'] + "'>" + seminar['title'] + "</a></td>"
         seminar_listing = seminar_listing + "</tr>"
     return site + seminar_listing

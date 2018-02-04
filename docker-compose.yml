@@ -1,0 +1,16 @@
+version: '3'
+services:
+  importer:
+    build: ./importer
+    volumes:
+      - db:/importer/db
+  web:
+    build: ./web
+    ports:
+      - "5000:5000"
+    volumes:
+      - db:/web/db
+    depends_on:
+      - "importer"
+volumes:
+    db:
