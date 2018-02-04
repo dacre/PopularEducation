@@ -20,8 +20,8 @@ def store_events(events):
 
 
 def main():
-    #events = SUScraper.get_events() + FUScraper.get_events()
-    events = MockScraper.get_events()
+    events = SUScraper.get_events() + FUScraper.get_events()
+    #events = MockScraper.get_events()
     from operator import itemgetter
     sorted_events = sorted(events, key=itemgetter('date'))
 
