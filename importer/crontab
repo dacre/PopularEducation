@@ -1,3 +1,2 @@
-* * * * * cd /importer/ && /usr/bin/python /importer/event_importer.py 2>&1
-* * * * * head /importer/db/db.csv 2>&1
+0 0 6 * * ? cd /importer/ && /usr/bin/python /importer/event_importer.py 2>&1
 #

@@ -10,7 +10,7 @@ from flask import Flask
 app = Flask(__name__)
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-database_filename = os.path.join(__location__, 'db/db.csv')
+database_filename = os.path.join(__location__, '/db/db.csv')
 
 
 def get_events():
