@@ -9,9 +9,13 @@ RUN apk add --no-cache python3 && \
     rm -r /root/.cache && \
     pip install flask -U bs4
 
-
 ADD . /web
+
+COPY /static/* /web/static/
+COPY /images/favicon.png /web/images/
+
 WORKDIR /web
+
 
 EXPOSE 5000
 CMD ["python", "/web/routes.py"]

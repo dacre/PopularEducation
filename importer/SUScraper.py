@@ -7,6 +7,7 @@ import urllib.request as request
 from bs4 import BeautifulSoup
 import datetime
 
+
 scrape_url = "http://www.su.se/om-oss/evenemang/%C3%B6ppna-f%C3%B6rel%C3%A4sningar/2.39658"
 
 
@@ -36,7 +37,7 @@ def get_events():
     for row in rows:
         day = row.contents[1].contents[1].next
         month = row.contents[1].contents[3].next
-        date = datetime.date(2018, convert_swedish_month(month), int(day))
+        date = datetime.date(datetime.datetime.now().year, convert_swedish_month(month), int(day))
         link = row.contents[3]['href']
         title = row.contents[3].contents[1].next
         description = row.contents[3].contents[2].strip()
