@@ -36,6 +36,11 @@ def convert_swedish_month(month):
     }[month]
 
 
+def format_time(jumbled_time_string):
+    separated_date_string = jumbled_time_string[3:-8]
+    return separated_date_string
+
+
 def get_events():
     html = request.urlopen(scrape_url).read()
     soup = BeautifulSoup(html, 'html.parser')
@@ -47,14 +52,19 @@ def get_events():
         event_link = base_url + link.attrs['href']
         title = link.contents[0]
         meta_data = row.find_all('span', {"class": "nfu-course-list-item__secondary-info-text"})
-        for idx, date in enumerate(meta_data):
+        for idx, metadata in enumerate(meta_data):
             if idx == 1:
-                event_date = format_date(date.contents[0])
+                event_date = format_date(metadata.contents[0])
+            if idx == 2:
+                jumbled_time_string = format_time(metadata.contents[0])
+                time_stamp = jumbled_time_string[2:-13]
+                starting_time = datetime.datetime.strptime(time_stamp, '%H:%M')
         seminar = {
             "date" : event_date,
+            "starting_time": starting_time.time(),
             "title" : title,
             "link" : event_link,
-            "location" : "Folkuniversitetet"
+            "location" : "Kungstensgatan 45, 10239 Stockholm"
         }
         events.append(seminar)
     return events

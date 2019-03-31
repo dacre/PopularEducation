@@ -6,26 +6,32 @@ import csv
 import os
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-database_filename = os.path.join(__location__, '/db/db.csv')
+database_filename = os.path.join(__location__, './db/db.csv')
 
 
 def store_events(events):
     with open(database_filename, 'w') as csv_file:
-        fieldnames = ['location', 'date', 'title', 'link']
+        fieldnames = ['location', 'date', 'starting_time', 'title', 'link']
         db_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         db_writer.writeheader()
         for event in events:
-            db_writer.writerow({'location': event['location'], 'date': event['date'],
-                                'title': event['title'], 'link': event['link']})
+            db_writer.writerow({'location': event['location'],
+                                'date': event['date'],
+                                'starting_time': event['starting_time'],
+                                'title': event['title'],
+                                'link': event['link']})
 
 
 def main():
-    events = SUScraper.get_events() + FUScraper.get_events()
+    events = ABFScraper.get_events() + SUScraper.get_events() + FUScraper.get_events()
     #events = MockScraper.get_events()
+    #sorted_events = sorted(events, key=lambda x: datetime.datetime.strptime(str(x["datetime"]), '%Y-%m-%d %H:%M:%S'))
     from operator import itemgetter
     sorted_events = sorted(events, key=itemgetter('date'))
-
     store_events(sorted_events)
+
+    for event in sorted_events:
+        print(event)
 
 
 if __name__ == "__main__":
@@ -35,7 +41,7 @@ if __name__ == "__main__":
             from os import path
 
             sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-            from importer import SUScraper, FUScraper, MockScraper
+            from importer import ABFScraper, SUScraper, FUScraper, MockScraper
         else:
-            from ..importer import SUScraper, FUScraper, MockScraper
+            from ..importer import ABFScraper, SUScraper, FUScraper, MockScraper
     main()

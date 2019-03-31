@@ -125,9 +125,7 @@ body {
   line-height: 1.6;
   font-weight: 400;
   font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #222;
-  background-color: #eeeeee;
-  }
+  color: #222; }
 
 
 /* Typography
@@ -326,15 +324,37 @@ pre > code {
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 th,
 td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #E1E1E1; }
+    padding: 12px 15px;
+    text-align: left;
+}
+tr {
+    border-top: 1px solid #E1E1E1;
+}
 th:first-child,
 td:first-child {
-  padding-left: 0; }
+    padding-left: 0;
+}
 th:last-child,
 td:last-child {
-  padding-right: 0; }
+    padding-right: 0;
+}
+@media only screen and (max-width: 749px) {
+    table, tr, td {
+        display: block;
+    }
+    thead {
+        display: none;
+    }
+}
+@media only screen and (min-width: 750px) {
+    td:first-child {
+        white-space: nowrap;
+    }
+    th, td {
+        border-bottom: 1px solid #E1E1E1;
+        vertical-align: top;
+    }
+}
 
 
 /* Spacing
@@ -418,54 +438,3 @@ there.
 
 /* Larger than Desktop HD */
 @media (min-width: 1200px) {}
-
-/*
-Stolen from: https://css-tricks.com/responsive-data-tables/
-Max width before this PARTICULAR table gets nasty
-This query will take effect for any screen smaller than 760px
-and also iPads specifically.
-*/
-@media
-only screen and (max-width: 760px),
-(min-device-width: 768px) and (max-device-width: 1024px)  {
-
-	/* Force table to not be like tables anymore */
-	table, thead, tbody, th, td, tr {
-		display: block;
-	}
-
-	/* Hide table headers (but not display: none;, for accessibility) */
-	thead tr {
-		position: absolute;
-		top: -9999px;
-		left: -9999px;
-	}
-
-	tr { border: 1px solid #ccc; }
-
-	td {
-		/* Behave  like a "row" */
-		border: none;
-		border-bottom: 1px solid #eee;
-		position: relative;
-		padding-left: 50%;
-	}
-
-	td:before {
-		/* Now like a table header */
-		position: absolute;
-		/* Top/left values mimic padding */
-		top: 6px;
-		left: 6px;
-		width: 45%;
-		padding-right: 10px;
-		white-space: nowrap;
-	}
-
-	/*
-	Label the data
-	*/
-	td:nth-of-type(1):before { content: "Plats"; }
-	td:nth-of-type(2):before { content: "Datum"; }
-	td:nth-of-type(3):before { content: "Titel"; }
-}

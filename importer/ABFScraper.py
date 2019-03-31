@@ -6,8 +6,8 @@ import json
 import requests
 import urllib.request as request
 from bs4 import BeautifulSoup
-from datetime import datetime
-import time
+import datetime, time
+import locale
 
 nonce_url = "https://abfstockholm.se/evenemang/"
 scrape_url = "https://abfstockholm.se/wp-admin/admin-ajax.php?action=wptheme_ajax_search&nonce=c76cb4cddb&default_post_type%5B%5D=evenemang&page=1"
@@ -65,8 +65,6 @@ def get_events():
                 title = ''
                 description = ''
                 location = ''
-                price_information = ''
-                date = ''
                 link = ''
                 titles = row.findAll(lambda tag: tag.name == 'a' and tag['class'] == ['open-modal'])
                 for title_found in titles:
@@ -95,21 +93,20 @@ def get_events():
                     if test: print("no price found ")
                 try:
                     date_strings = row.find(lambda tag: tag.name == 'time')
-                    import locale
                     locale.setlocale(locale.LC_ALL, "sv_SE")
-                    date_string_list = []
                     date_string_list = date_strings.text.split('\n', 99)
                     for date in date_string_list:
                         if date != '' and date.strip() != "[...]":
                             date_no_whitespace = date.strip()
                             if len(date_no_whitespace) > 8:
-                                formatted_date = datetime.strptime(date_no_whitespace, '%d/%m/%Y %H:%M')
+                                formatted_date = datetime.datetime.strptime(date_no_whitespace, '%d/%m/%Y %H:%M')
                             elif len(date_no_whitespace) > 5:
-                                formatted_date = datetime.strptime(date_no_whitespace, '%d/%m/%Y')
+                                formatted_date = datetime.datetime.strptime(date_no_whitespace, '%d/%m/%Y')
                             else:
                                 formatted_date = ""
                             seminar = {
-                                "date": formatted_date,
+                                "date": formatted_date.date(),
+                                "starting_time": formatted_date.time(),
                                 "title": title,
                                 "description": description,
                                 "link": link,
@@ -119,7 +116,8 @@ def get_events():
                 except AttributeError as ae:
                     if test: print("no date found ")
         time.sleep(1)
-        print("Parsed page: " + str(page_index) + ". Found " + str(len(events)) + " events so far.")
+        if test:
+            print("Parsed page: " + str(page_index) + ". Found " + str(len(events)) + " events so far.")
     return events
 
 
@@ -133,8 +131,8 @@ def get_weird_json_with_no_more_results():
 
 if __name__ == '__main__':
     try:
-        event = get_events()
-        for event in (event or []):
+        events = get_events()
+        for event in (events or []):
             print("Event: " + ''.join(str(event)) + ")")
     except LookupError as le:
         print(le)

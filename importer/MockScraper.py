@@ -21,6 +21,7 @@ def get_events():
         event_date = format_date("2018 1 " + str(idx))
         seminar = {
             "date":  event_date,
+            "starting_time": datetime.time(19, 0),
             "title": "mock_title_" + str(idx),
             "link": "http://mock_title_" + str(idx),
             "location": "Mock place, " + str(idx)

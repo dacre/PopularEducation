@@ -16,12 +16,6 @@ RUN apk add --no-cache python3 && \
 ADD . /importer
 WORKDIR /importer
 
-COPY /db/db.csv /importer/db/
+COPY /db/db.csv /importer/
 
-COPY crontab /var/spool/cron/crontabs/$APP_USER
-RUN chmod 0600 /var/spool/cron/crontabs/$APP_USER
-RUN chmod 777 /importer/*
-RUN chmod 777 /importer/db/*
-
-CMD ["crond", "-f", "-d", "8"]
-
+CMD ["python", "/importer/event_importer.py"]
