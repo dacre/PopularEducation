@@ -3,6 +3,7 @@
 
 # this stores events from all event sites in a file
 import csv
+import datetime
 
 database_filename = 'db/db.csv'
 
@@ -27,6 +28,7 @@ def main():
     store_events(sorted_events)
 
     print(str(len(sorted_events)) + " events imported at "+ str(datetime.date.today()))
+
 
 if __name__ == "__main__":
     if __name__ == '__main__':
