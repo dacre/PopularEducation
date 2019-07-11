@@ -35,31 +35,34 @@ def get_events():
     rows = table.find_all('li')
     events = []
     for row in rows:
-        day = row.contents[1].contents[1].next
-        month = row.contents[1].contents[3].next
-        date = datetime.date(datetime.datetime.now().year, convert_swedish_month(month), int(day))
-        link = row.contents[3]['href']
-        title = row.contents[3].contents[1].next
-        description = row.contents[3].contents[2].strip()
-        if description is '':
-            description = row.contents[3].contents[3].next.strip()
-        linked_html = request.urlopen(link).read()
-        linked_soup = BeautifulSoup(linked_html, 'html.parser')
-        location = linked_soup.find('span', {"class": "location"}).text
-        start_of_time_tag = linked_soup.find('span', {"class": "dtstart"})
-        time_tag = start_of_time_tag.find('span', {"class": "value-title"}).get('title')
-        time_tag_without_timezone = time_tag[:-6] # 2019-03-26T18:00+01:00
-        starting_time = datetime.datetime.strptime(time_tag_without_timezone, '%Y-%m-%dT%H:%M') # 2019-03-26T18:00
+        try:
+            day = row.contents[1].contents[1].next
+            month = row.contents[1].contents[3].next
+            date = datetime.date(datetime.datetime.now().year, convert_swedish_month(month), int(day))
+            link = row.contents[3]['href']
+            title = row.contents[3].contents[1].next
+            description = row.contents[3].contents[2].strip()
+            if description is '' and len(row.contents[3].contents) > 3:
+                description = row.contents[3].contents[3].next.strip()
+            linked_html = request.urlopen(link).read()
+            linked_soup = BeautifulSoup(linked_html, 'html.parser')
+            location = linked_soup.find('span', {"class": "location"}).text
+            start_of_time_tag = linked_soup.find('span', {"class": "dtstart"})
+            time_tag = start_of_time_tag.find('span', {"class": "value-title"}).get('title')
+            time_tag_without_timezone = time_tag[:-6] # 2019-03-26T18:00+01:00
+            starting_time = datetime.datetime.strptime(time_tag_without_timezone, '%Y-%m-%dT%H:%M') # 2019-03-26T18:00
 
-        seminar = {
-            "date" : date,
-            "starting_time": starting_time.time(),
-            "title" : title,
-            "description" : description,
-            "link" : link,
-            "location" : location
-        }
-        events.append(seminar)
+            seminar = {
+                "date" : date,
+                "starting_time": starting_time.time(),
+                "title" : title,
+                "description" : description,
+                "link" : link,
+                "location" : location
+            }
+            events.append(seminar)
+        except Exception as e:
+            print("ERROR Something went wrong: ", e)
     return events
 
 

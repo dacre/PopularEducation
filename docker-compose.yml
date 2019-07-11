@@ -1,17 +1,18 @@
-version: '3'
+version: '3.7'
 services:
   importer:
     image: folkbildning.importer:latest
     build: ./importer
     volumes:
-      - /Users/Johannes/PycharmProjects/Folkbildning/importer/db:db
+      - type: bind
+        source: /Users/Johannes/PycharmProjects/Folkbildning/db
+        target: /importer/db/
   web:
     image: folkbildning.web:latest
     build: ./web
     ports:
       - "5000:5000"
     volumes:
-      - /Users/Johannes/PycharmProjects/Folkbildning/importer/db:/db
-
-volumes:
-  db:
+      - type:  bind
+        source: /Users/Johannes/PycharmProjects/Folkbildning/db
+        target: /web/db/

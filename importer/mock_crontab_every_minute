@@ -1,0 +1,2 @@
+* * * * * cd /importer/ && /usr/bin/python /importer/mock_event_importer.py 2>&1
+#

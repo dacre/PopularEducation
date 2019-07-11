@@ -1,10 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-# this gets all events including dates of open seminars at FolkUniversitetet
+# this creates 10 fake events
 
-import urllib.request as request
-from bs4 import BeautifulSoup
 import datetime
 
 
@@ -17,17 +15,17 @@ def format_date(jumbled_date_string):
 
 def get_events():
     events = []
-    for row, idx in enumerate(range(1,10)):
-        event_date = format_date("2018 1 " + str(idx))
-        seminar = {
-            "date":  event_date,
-            "starting_time": datetime.time(19, 0),
-            "title": "mock_title_" + str(idx),
-            "link": "http://mock_title_" + str(idx),
-            "location": "Mock place, " + str(idx)
-        }
-        print("scraper: " + str(seminar))
-        events.append(seminar)
+    for outer in range(0,10):
+        for row, idx in enumerate(range(10,20)):
+            event_date = format_date("2019 7 " + str(idx))
+            seminar = {
+                "date": event_date,
+                "starting_time": datetime.time(19, 0),
+                "title": "mock_title_" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S' + " - " + str(idx)),
+                "link": "http://mock_title_" + str(idx),
+                "location": "Mock place, " + str(idx)
+            }
+            events.append(seminar)
     return events
 
 

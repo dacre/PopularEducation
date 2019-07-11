@@ -11,7 +11,7 @@ import locale
 
 nonce_url = "https://abfstockholm.se/evenemang/"
 scrape_url = "https://abfstockholm.se/wp-admin/admin-ajax.php?action=wptheme_ajax_search&nonce=c76cb4cddb&default_post_type%5B%5D=evenemang&page=1"
-test = True
+test = False
 
 
 def get_nonce():
@@ -29,6 +29,15 @@ def get_nonce():
         return ""
 
 
+def get_likely_year(formatted_date):
+    current_month = datetime.date.today().month
+    current_year = datetime.date.today().year
+    if formatted_date.month < current_month:
+        return current_year+1
+    else:
+        return current_year
+
+
 def get_events():
     nonce = ""
     if not test:
@@ -42,11 +51,10 @@ def get_events():
             'action': 'wptheme_ajax_search',
             'nonce': nonce,
             'default_post_type[]': 'evenemang',
-            'page': page_index+1,
-            'post__in': '8395,9861,9678,9034,5840,8528,9862,9319,1527,8392,9863,9350,8419,9864,10071,9561,9865,9772,8404,9870,9714,8656,9871,10133,8647,9872,9922,8628,9873,10176,8449,9866,9647,9566,9910,10152,8467,9911,9123,8540,9912,9679,8410,9869,9325,8251,9877,9281,8403,9878,10103,8257,9879,10048,8369,9880,9324,9565,9881,9231,8384,9882,10076,8444,9883,9762,8516,9884,10146,8316,9885,9588,8398,9886,10080,8446,9887,10082,8346,9888,10009,8413,9889,9487,8529,9890,10006,8294,9913,9349,8559,9914,10007,8570,9915,9681,8394,9916,9580,9564,9867,9136,8379,9908,10119,8358,9868,10134,8437,9909,10067,8542,9899,9343,8259,9900,9682,8244,9891,9341,8562,9907,9926,8407,9892,10049,8536,9893,9270,9562,9894,10141,8405,9895,9685,9563,9896,10181,8420,9897,9625,8359,9898,5810,8912,9904,10085,8537,9905,9687,8653,9906,10019,8535,9901,9488,8314,9902,10179,8333,9903,9688,8371,9874,10110,8386,9875,10105,8566,9876,10137,8310,9924,8372,10123,9571,10165,8655,9385,8360,9282,9958,10184,8339,10108,8347,10050,8411,10187,9959,9768,8543,10189,8276,9771,8373,10223,8442,10093,8550,9193,8544,10011,8545,9353,8311,9352,8268,10013,8461,10202,8269,10072,8510,10036,8312,10191,8317,9138,10139,9295,10120,10060,10221,10193,9717,9410,10087,10090,10171,10195,9496,9929,10126,10197,9125,10199,9140,9500,10201,9776,9322,10062,10161,10143,9503,10204,9783,10206,9504,10208,9470,9788,9474,10098,9506,9206,9142,9386,9726,9731,10231,5812,9779,10033,9126,10129,9475,9796,5814,9232,9483,9477,9480,10131'
+            'page': page_index+1
         }
         if not test:
-            response = requests.post('https://abfstockholm.se/wp-admin/admin-ajax.php', data=data)
+            response = requests.post('https://abfstockholm.se/wp/wp-admin/admin-ajax.php', data=data)
             json_data = json.loads(response.text, strict=False)
         else:
             if page_index == 1:
@@ -97,22 +105,33 @@ def get_events():
                     date_string_list = date_strings.text.split('\n', 99)
                     for date in date_string_list:
                         if date != '' and date.strip() != "[...]":
-                            date_no_whitespace = date.strip()
-                            if len(date_no_whitespace) > 8:
-                                formatted_date = datetime.datetime.strptime(date_no_whitespace, '%d/%m/%Y %H:%M')
-                            elif len(date_no_whitespace) > 5:
-                                formatted_date = datetime.datetime.strptime(date_no_whitespace, '%d/%m/%Y')
-                            else:
-                                formatted_date = ""
-                            seminar = {
-                                "date": formatted_date.date(),
-                                "starting_time": formatted_date.time(),
-                                "title": title,
-                                "description": description,
-                                "link": link,
-                                "location": location
-                            }
-                            events.append(seminar)
+                            date_no_whitespace_on_either_side = date.strip()
+                            try:
+                                if len(date_no_whitespace_on_either_side) > 45:
+                                    date_no_multiple_spaces = " ".join(date_no_whitespace_on_either_side.split())
+                                    formatted_date = datetime.datetime.strptime(date_no_multiple_spaces, '%d/%m %Y %H:%M')
+                                elif len(date_no_whitespace_on_either_side) > 40:
+                                    date_no_multiple_spaces = " ".join(date_no_whitespace_on_either_side.split())
+                                    formatted_date = datetime.datetime.strptime(date_no_multiple_spaces, '%d/%m %H:%M')
+                                    year = get_likely_year(formatted_date)
+                                    formatted_date = formatted_date.replace(year = year)
+                                elif len(date_no_whitespace_on_either_side) > 8:
+                                    formatted_date = datetime.datetime.strptime(date_no_whitespace_on_either_side, '%d/%m/%Y %H:%M')
+                                elif len(date_no_whitespace_on_either_side) > 5:
+                                    formatted_date = datetime.datetime.strptime(date_no_whitespace_on_either_side, '%d/%m/%Y')
+                                else:
+                                    formatted_date = ""
+                                seminar = {
+                                    "date": formatted_date.date(),
+                                    "starting_time": formatted_date.time(),
+                                    "title": title,
+                                    "description": description,
+                                    "link": link,
+                                    "location": location
+                                }
+                                events.append(seminar)
+                            except ValueError as ve:
+                                print("date date could not be handled: " + date_no_whitespace_on_either_side)
                 except AttributeError as ae:
                     if test: print("no date found ")
         time.sleep(1)

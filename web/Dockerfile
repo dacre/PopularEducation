@@ -1,5 +1,9 @@
 FROM alpine:latest
 
+ENV APP_USER appuser
+
+RUN adduser -g "App User" -D $APP_USER
+
 RUN apk add --no-cache python3 && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
@@ -10,12 +14,10 @@ RUN apk add --no-cache python3 && \
     pip install flask -U bs4
 
 ADD . /web
-
+WORKDIR /web
 COPY /static/* /web/static/
 COPY /images/favicon.png /web/images/
-
-WORKDIR /web
-
+USER $APP_USER
 
 EXPOSE 5000
 CMD ["python", "/web/routes.py"]

@@ -2,7 +2,10 @@
 # -*- coding: UTF-8 -*-
 
 # this stores events from all event sites in a file
+
+
 import csv
+import datetime
 
 database_filename = 'db/db.csv'
 
@@ -21,12 +24,12 @@ def store_events(events):
 
 
 def main():
-    events = ABFScraper.get_events() + SUScraper.get_events() + FUScraper.get_events()
+    events = MockScraper.get_events()
     from operator import itemgetter
     sorted_events = sorted(events, key=itemgetter('date'))
     store_events(sorted_events)
-
     print(str(len(sorted_events)) + " events imported at "+ str(datetime.date.today()))
+
 
 if __name__ == "__main__":
     if __name__ == '__main__':
@@ -35,7 +38,7 @@ if __name__ == "__main__":
             from os import path
 
             sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-            from importer import ABFScraper, SUScraper, FUScraper
+            from importer import MockScraper
         else:
-            from ..importer import ABFScraper, SUScraper, FUScraper
+            from ..importer import MockScraper
     main()
