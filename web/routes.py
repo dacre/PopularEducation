@@ -97,7 +97,7 @@ def hello_world():
     Sidan är i nuläget en förstautgåva - på sikt är tanken att det ska tillkomma ytterligare funktioner. 
     Det går att läsa mer om projektet <a href="https://github.com/dacre/PopularEducation">här</a>. 
     <p>
-    Vill du hjälpa till, höra av dig med kommentarer eller andra tillrop så går det bra på hoierjohannes snabel-a gmail.com.
+    Vill du hjälpa till, höra av dig med kommentarer eller andra tillrop så går det bra på hoierjohannes snabel-a gmail.com!
     <p>
     <form method="get">
         
