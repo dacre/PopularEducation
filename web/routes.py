@@ -85,7 +85,7 @@ def hello_world():
         <h2>En hemsida som samlar bildning för alla!</h2>
     </head>
     <body>
-    Här kan du hitta föreläsningar som är tillgängliga för allmämheten i Stockholm.
+    Här kan du hitta föreläsningar som är tillgängliga för allmänheten i Stockholm.
     <p><br> 
     I nuläget finns här föreläsningar, men även stadsvandringar, utomhusbio och liknande aktiviteter från 
     <a href="http://abfstockholm.se/evenemang/">ABF Stockholm</a>, 
