@@ -64,7 +64,7 @@ def get_events():
             "starting_time": starting_time.time(),
             "title" : title,
             "link" : event_link,
-            "location" : "Kungstensgatan 45, 10239 Stockholm"
+            "location" : "Kungstensgatan 45, 102 39 Stockholm"
         }
         events.append(seminar)
     return events

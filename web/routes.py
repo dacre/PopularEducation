@@ -81,14 +81,27 @@ def hello_world():
         <meta name="viewport" content="width=device-width"> 
         <title>Öppna föreläsningar i Stockholm</title>
         <link rel="stylesheet" type="text/css" href="static/skeleton_and_responsive_table.css">
-        <h1 id="#"><a href="/">Bildningstid</a></h1>
-        <h2>Öppna föreläsningar i Stockholm</h2>
+        <h1 id="#"><a href="/">Bildningstid.se</a></h1>
+        <h2>En hemsida som samlar bildning för alla!</h2>
     </head>
     <body>
+    Här kan du hitta föreläsningar som är tillgängliga för allmämheten i Stockholm.
+    <p><br> 
+    I nuläget finns här föreläsningar, men även stadsvandringar, utomhusbio och liknande aktiviteter från 
+    <a href="http://abfstockholm.se/evenemang/">ABF Stockholm</a>, 
+    <a href="http://www.folkuniversitetet.se/Har-finns-vi/Stockholm/Forelasningar-och-seminarier/">Folkuniversitetet</a> 
+    och <a href="https://www.su.se/om-oss/evenemang/%C3%B6ppna-f%C3%B6rel%C3%A4sningar/2.39658">Stockholms Universitet</a>. 
     <br>
+    Oftast är det gratis, men i vissa fall kostar det lite grann.
+    <p>
+    Sidan är i nuläget en förstautgåva - på sikt är tanken att det ska tillkomma ytterligare funktioner. 
+    Det går att läsa mer om projektet <a href="https://github.com/dacre/PopularEducation">här</a>. 
+    <p>
+    Vill du hjälpa till, höra av dig med kommentarer eller andra tillrop så går det bra på hoierjohannes snabel-a gmail.com.
+    <p>
     <form method="get">
         
-        <legend>Välj vilka dagar du vill filtrera fram.<br></legend>
+        <legend>Välj vilka dagar du vill få träff på:<br></legend>
         
         <input type="checkbox" name="day_group[]" value="1" id="1" """ + checkbox_days_checked("1", filter_days) + """> Måndagar
         <br>
