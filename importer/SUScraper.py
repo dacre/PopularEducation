@@ -11,6 +11,15 @@ import datetime
 scrape_url = "http://www.su.se/om-oss/evenemang/%C3%B6ppna-f%C3%B6rel%C3%A4sningar/2.39658"
 
 
+def get_likely_year(formatted_date):
+    current_month = datetime.date.today().month
+    current_year = datetime.date.today().year
+    if formatted_date.month < current_month:
+        return current_year+1
+    else:
+        return current_year
+
+
 def convert_swedish_month(month):
     return {
         'jan': 1,
@@ -36,9 +45,6 @@ def get_events():
     events = []
     for row in rows:
         try:
-            day = row.contents[1].contents[1].next
-            month = row.contents[1].contents[3].next
-            date = datetime.date(datetime.datetime.now().year, convert_swedish_month(month), int(day))
             link = row.contents[3]['href']
             title = row.contents[3].contents[1].next
             description = row.contents[3].contents[2].strip()
@@ -53,7 +59,7 @@ def get_events():
             starting_time = datetime.datetime.strptime(time_tag_without_timezone, '%Y-%m-%dT%H:%M') # 2019-03-26T18:00
 
             seminar = {
-                "date" : date,
+                "date" : starting_time.date(),
                 "starting_time": starting_time.time(),
                 "title" : title,
                 "description" : description,
