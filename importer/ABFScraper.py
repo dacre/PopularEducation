@@ -9,134 +9,121 @@ from bs4 import BeautifulSoup
 import datetime, time
 import locale
 
-nonce_url = "https://abfstockholm.se/evenemang/"
-scrape_url = "https://abfstockholm.se/wp-admin/admin-ajax.php?action=wptheme_ajax_search&nonce=c76cb4cddb&default_post_type%5B%5D=evenemang&page=1"
 test = False
-
-
-def get_nonce():
-    if not test:
-        html = request.urlopen(nonce_url).read()
-        soup = BeautifulSoup(html, 'html.parser')
-
-        head = soup.find("head")
-        for navstr in head(text=True):
-            CDATA_in_parts = str(navstr).split("\"")
-            for idx, part in enumerate(CDATA_in_parts):
-                if part == "nonce":
-                    return CDATA_in_parts[idx + 2]
-    else:
-        return ""
 
 
 def get_likely_year(formatted_date):
     current_month = datetime.date.today().month
     current_year = datetime.date.today().year
     if formatted_date.month < current_month:
-        return current_year+1
+        return current_year + 1
     else:
         return current_year
 
 
+def make_request():
+    import requests
+
+    headers = {
+        'Connection': 'keep-alive',
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache',
+        'Accept': 'application/json, text/plain, */*',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Origin': 'http://abfstockholm.se',
+        'Referer': 'http://abfstockholm.se/evenemang/',
+        'Accept-Language': 'sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.7,da;q=0.6',
+    }
+
+    data = '{"filters":{"category":[47,75]},"per_page":1000,"page":1}'
+
+    return (requests.post('http://abfstockholm.se/wp-json/abf/search/events', headers=headers,
+                          data=data, verify=False))
+
+
 def get_events():
-    nonce = ""
-    if not test:
-        nonce = get_nonce()
-    stop_outer_loop = False
-    page_index = 0
     events = []
-    while page_index < 50 and stop_outer_loop is False:
-        page_index += 1
-        data = {
-            'action': 'wptheme_ajax_search',
-            'nonce': nonce,
-            'default_post_type[]': 'evenemang',
-            'page': page_index+1
-        }
-        if not test:
-            response = requests.post('https://abfstockholm.se/wp/wp-admin/admin-ajax.php', data=data)
-            json_data = json.loads(response.text, strict=False)
+    if not test:
+        response = make_request()
+        json_data = json.loads(response.text, strict=False)
+    else:
+        response = get_weird_json()
+        json_data = json.loads(response, strict=False)
+    inner_html = json_data['posts']
+    new_soup = BeautifulSoup(inner_html, 'html.parser')
+    for row in new_soup:
+        possible_end_tag = row.find(text='Inget hittat.')
+        if possible_end_tag is not None:
+            continue
         else:
-            if page_index == 1:
-                response = get_weird_json()
-            else:
-                response = get_weird_json_with_no_more_results()
-            json_data = json.loads(response, strict=False)
-        inner_html = json_data['results']
-        new_soup = BeautifulSoup(inner_html, 'html.parser')
-        for row in new_soup:
-            possible_end_tag = row.find(text='Inget hittat.')
-            if possible_end_tag is not None:
-                stop_outer_loop = True
-                continue
-            else:
-                title = ''
-                description = ''
-                location = ''
-                link = ''
-                titles = row.findAll(lambda tag: tag.name == 'a' and tag['class'] == ['open-modal'])
-                for title_found in titles:
-                    if title_found != '':
-                        title = title_found.text.strip()
-                        continue
-                try:
-                    link = row.find(lambda tag: tag.name == 'a' and tag['href'] is not None).attrs['href']
-                except AttributeError as ae:
-                    if test: print("no link found")
-                try:
-                    description = row.find(lambda tag: tag.name == 'div' and tag['class'] == ['desc']).text.strip()
-                except AttributeError as ae:
-                    if test: print("no description found ")
-                try:
-                    location = row.find(lambda tag: tag.name == 'span' and tag['class'] == ['location']).text.strip()
-                except AttributeError as ae:
-                    if test: print("no location found ")
-                try:
-                    price_information = row.find(lambda tag: tag.name == 'span' and tag['class'] == ['price'])
-                    if price_information is None:
-                        price = ""
-                    else:
-                        price = price_information.text.strip()
-                except AttributeError as ae:
-                    if test: print("no price found ")
-                try:
-                    date_strings = row.find(lambda tag: tag.name == 'time')
-                    locale.setlocale(locale.LC_ALL, "sv_SE")
-                    date_string_list = date_strings.text.split('\n', 99)
-                    for date in date_string_list:
-                        if date != '' and date.strip() != "[...]":
-                            date_no_whitespace_on_either_side = date.strip()
-                            try:
-                                if len(date_no_whitespace_on_either_side) > 45:
-                                    date_no_multiple_spaces = " ".join(date_no_whitespace_on_either_side.split())
-                                    formatted_date = datetime.datetime.strptime(date_no_multiple_spaces, '%d/%m %Y %H:%M')
-                                elif len(date_no_whitespace_on_either_side) > 40:
-                                    date_no_multiple_spaces = " ".join(date_no_whitespace_on_either_side.split())
-                                    formatted_date = datetime.datetime.strptime(date_no_multiple_spaces, '%d/%m %H:%M')
-                                    year = get_likely_year(formatted_date)
-                                    formatted_date = formatted_date.replace(year = year)
-                                elif len(date_no_whitespace_on_either_side) > 8:
-                                    formatted_date = datetime.datetime.strptime(date_no_whitespace_on_either_side, '%d/%m/%Y %H:%M')
-                                elif len(date_no_whitespace_on_either_side) > 5:
-                                    formatted_date = datetime.datetime.strptime(date_no_whitespace_on_either_side, '%d/%m/%Y')
-                                else:
-                                    formatted_date = ""
-                                seminar = {
-                                    "date": formatted_date.date(),
-                                    "starting_time": formatted_date.time(),
-                                    "title": title,
-                                    "description": description,
-                                    "link": link,
-                                    "location": location
-                                }
-                                events.append(seminar)
-                            except ValueError as ve:
-                                print("date date could not be handled: " + date_no_whitespace_on_either_side)
-                except AttributeError as ae:
-                    if test: print("no date found ")
-        time.sleep(1)
-        if test:
-            print("Parsed page: " + str(page_index) + ". Found " + str(len(events)) + " events so far.")
+            title = ''
+            description = ''
+            location = ''
+            link = ''
+            titles = row.findAll(lambda tag: tag.name == 'a' and tag['class'] == ['open-modal'])
+            for title_found in titles:
+                if title_found != '':
+                    title = title_found.text.strip()
+                    continue
+            try:
+                link = row.find(lambda tag: tag.name == 'a' and tag['href'] is not None).attrs['href']
+            except AttributeError as ae:
+                if test: print("no link found")
+            try:
+                description = row.find(lambda tag: tag.name == 'div' and tag['class'] == ['desc']).text.strip()
+            except AttributeError as ae:
+                if test: print("no description found ")
+            try:
+                location = row.find(lambda tag: tag.name == 'span' and tag['class'] == ['location']).text.strip()
+            except AttributeError as ae:
+                if test: print("no location found ")
+            try:
+                price_information = row.find(lambda tag: tag.name == 'span' and tag['class'] == ['price'])
+                if price_information is None:
+                    price = ""
+                else:
+                    price = price_information.text.strip()
+            except AttributeError as ae:
+                if test: print("no price found ")
+            try:
+                date_strings = row.find(lambda tag: tag.name == 'time')
+                locale.setlocale(locale.LC_ALL, "sv_SE")
+                date_string_list = date_strings.text.split('\n', 99)
+                for date in date_string_list:
+                    if date != '' and date.strip() != "[...]":
+                        date_no_whitespace_on_either_side = date.strip()
+                        try:
+                            if len(date_no_whitespace_on_either_side) > 45:
+                                date_no_multiple_spaces = " ".join(date_no_whitespace_on_either_side.split())
+                                formatted_date = datetime.datetime.strptime(date_no_multiple_spaces, '%d/%m %Y %H:%M')
+                            elif len(date_no_whitespace_on_either_side) > 40:
+                                date_no_multiple_spaces = " ".join(date_no_whitespace_on_either_side.split())
+                                formatted_date = datetime.datetime.strptime(date_no_multiple_spaces, '%d/%m %H:%M')
+                                year = get_likely_year(formatted_date)
+                                formatted_date = formatted_date.replace(year=year)
+                            elif len(date_no_whitespace_on_either_side) > 8:
+                                formatted_date = datetime.datetime.strptime(date_no_whitespace_on_either_side,
+                                                                            '%d/%m/%Y %H:%M')
+                            elif len(date_no_whitespace_on_either_side) > 5:
+                                formatted_date = datetime.datetime.strptime(date_no_whitespace_on_either_side,
+                                                                            '%d/%m/%Y')
+                            else:
+                                formatted_date = ""
+                            seminar = {
+                                "date": formatted_date.date(),
+                                "starting_time": formatted_date.time(),
+                                "title": title,
+                                "description": description,
+                                "link": link,
+                                "location": location
+                            }
+                            events.append(seminar)
+                        except ValueError as ve:
+                            print("date date could not be handled: " + date_no_whitespace_on_either_side)
+            except AttributeError as ae:
+                if test:
+                    print("no date found ")
     return events
 
 
