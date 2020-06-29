@@ -21,7 +21,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bildningstid.rule=Host(`bildningstid.se`)"
-      - "traefik.http.routers.bildningstid.entrypoints=web"
+      - "traefik.http.routers.bildningstid.entrypoints=websecure"
+      - "traefik.http.routers.bildningstid.tls.certresolver=myresolver"
 networks:
   default:
     external: 
