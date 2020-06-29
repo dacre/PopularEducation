@@ -5,7 +5,7 @@
 import csv
 import datetime
 
-database_filename = 'db/db.csv'
+database_filename = '../db/db.csv'
 
 
 def store_events(events):

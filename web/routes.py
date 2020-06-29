@@ -9,7 +9,7 @@ import datetime
 
 app = Flask(__name__)
 default_number_of_events_to_show = 5
-database_filename = 'db/db.csv'
+database_filename = '../db/db.csv'
 
 
 def filtered_in(date, days_in_filter):

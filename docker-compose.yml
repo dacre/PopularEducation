@@ -2,17 +2,27 @@ version: '3.7'
 services:
   importer:
     image: folkbildning.importer:latest
+    restart: unless-stopped
     build: ./importer
     volumes:
       - type: bind
-        source: /Users/Johannes/PycharmProjects/Folkbildning/db
-        target: /importer/db/
+        source: ./db
+        target: /db/
   web:
     image: folkbildning.web:latest
+    restart: unless-stopped
     build: ./web
     ports:
       - "5000:5000"
     volumes:
       - type:  bind
-        source: /Users/Johannes/PycharmProjects/Folkbildning/db
-        target: /web/db/
+        source: ./db
+        target: /db/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bildningstid.rule=Host(`bildningstid.se`)"
+      - "traefik.http.routers.bildningstid.entrypoints=web"
+networks:
+  default:
+    external: 
+      name: gateway
