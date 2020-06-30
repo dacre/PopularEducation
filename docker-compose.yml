@@ -8,6 +8,10 @@ services:
       - type: bind
         source: ./db
         target: /db/
+    volumes:
+      - type: bind
+        source: ./log
+        target: /log/
   web:
     image: folkbildning.web:latest
     restart: unless-stopped
