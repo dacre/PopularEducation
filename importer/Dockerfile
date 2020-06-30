@@ -14,14 +14,14 @@ RUN apk add --no-cache python3 && \
     if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
 
 ADD . /importer
-ADD . /db
-ADD . /log
+#ADD . /db
+#ADD . /log
 WORKDIR /importer
 COPY crontab /var/spool/cron/crontabs/$APP_USER
 RUN chmod -R 705 /var/spool/cron/crontabs/$APP_USER
 RUN chmod -R 705 /importer/
-RUN chmod -R 707 /db/
-RUN chmod -R 707 /log/
+#RUN chmod -R 707 /db/
+#RUN chmod -R 707 /log/
 #TODO use this, but fix crond för USER $APP_USER
 
 CMD ["crond", "-f", "-d", "8"]
