@@ -2,14 +2,17 @@
 # -*- coding: UTF-8 -*-
 
 # this gets all events including dates of open seminars at FolkUniversitetet
-
-import urllib.request as request
+import logging
 from bs4 import BeautifulSoup
 import datetime
 import bs4
+from importer import event_importer
+import os
 
 scrape_url = "http://www.folkuniversitetet.se/Har-finns-vi/Stockholm/Forelasningar-och-seminarier/"
 base_url = "http://www.folkuniversitetet.se"
+
+logger = logging.getLogger('importer.' + os.path.basename(__file__))
 
 
 def test_format_date():
@@ -89,36 +92,37 @@ def get_events():
     events = []
     for row in rows:
         if isinstance(row, bs4.element.Tag):
-            event_link = base_url + row.attrs['href']
-            title = row.find('h2', {"class": "card-title mb-0"})
-            meta_data = row.find_all('span', {"class": "p-0 mt-3 mr-3 badge badge-transparent badge-with-icon"})
+            try:
+                event_link = base_url + row.attrs['href']
+                title = row.find('h2', {"class": "card-title mb-0"})
+                meta_data = row.find_all('span', {"class": "p-0 mt-3 mr-3 badge badge-transparent badge-with-icon"})
 
-            for metadata in enumerate(meta_data):
-                if "Startdatum" in metadata[1].text:
-                    event_date = format_date(metadata[1].contents[5].text)
-                if "Tid" in metadata[1].text:
-                    time_stamp = format_time(metadata[1].contents[5].text)
-                    starting_time = datetime.datetime.strptime(time_stamp, '%H:%M')
-            seminar = {
-                "date" : event_date,
-                "starting_time": starting_time.time(),
-                "title" : title.text.strip(),
-                "link" : event_link,
-                "location" : "Kungstensgatan 45, 102 39 Stockholm"
-            }
-            events.append(seminar)
+                for metadata in enumerate(meta_data):
+                    if "Startdatum" in metadata[1].text:
+                        event_date = format_date(metadata[1].contents[5].text)
+                    if "Tid" in metadata[1].text:
+                        time_stamp = format_time(metadata[1].contents[5].text)
+                        starting_time = datetime.datetime.strptime(time_stamp, '%H:%M')
+                seminar = {
+                    "date" : event_date,
+                    "starting_time": starting_time.time(),
+                    "title" : title.text.strip(),
+                    "link" : event_link,
+                    "location" : "Kungstensgatan 45, 102 39 Stockholm"
+                }
+                events.append(seminar)
+            except Exception:
+                logger.error("event could not be parsed", exc_info=True)
+    logger.info("Imported " + str(len(events)))
     return events
 
 
 if __name__ == '__main__':
     try:
         events = get_events()
-        if events == "":
-            print("No events found!")
-        else:
-            for event in events:
-                print("Event: " + ''.join(str(event)) + ")")
-    except LookupError as le:
-        print(le.message)
+        logger.info("Imported " + str(len(events)))
+    except Exception:
+        logger.error(exc_info=True)
+
 
 

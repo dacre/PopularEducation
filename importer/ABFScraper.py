@@ -3,11 +3,14 @@
 
 # this gets all events including dates of open seminars at Stockholm University
 import json
-import requests
-import urllib.request as request
+import logging
+import os
 from bs4 import BeautifulSoup
-import datetime, time
+import datetime
 import locale
+from importer import event_importer
+
+logger = logging.getLogger('importer.' + os.path.basename(__file__))
 
 test = False
 
@@ -43,6 +46,7 @@ def make_request():
 
 
 def get_events():
+    logger = logging.getLogger('importer.' + os.path.basename(__file__))
     events = []
     if not test:
         response = make_request()
@@ -69,15 +73,17 @@ def get_events():
             try:
                 link = row.find(lambda tag: tag.name == 'a' and tag['href'] is not None).attrs['href']
             except AttributeError as ae:
+                logger.error("no link found", exc_info=True)
+
                 if test: print("no link found")
             try:
                 description = row.find(lambda tag: tag.name == 'div' and tag['class'] == ['desc']).text.strip()
             except AttributeError as ae:
-                if test: print("no description found ")
+                logger.error("no description found", exc_info=True)
             try:
                 location = row.find(lambda tag: tag.name == 'span' and tag['class'] == ['location']).text.strip()
             except AttributeError as ae:
-                if test: print("no location found ")
+                logger.error("no location found", exc_info=True)
             try:
                 price_information = row.find(lambda tag: tag.name == 'span' and tag['class'] == ['price'])
                 if price_information is None:
@@ -85,7 +91,7 @@ def get_events():
                 else:
                     price = price_information.text.strip()
             except AttributeError as ae:
-                if test: print("no price found ")
+                logger.error("no price found", exc_info=True)
             try:
                 date_strings = row.find(lambda tag: tag.name == 'time')
                 locale.setlocale(locale.LC_ALL, "sv_SE")
@@ -120,10 +126,10 @@ def get_events():
                             }
                             events.append(seminar)
                         except ValueError as ve:
-                            print("date date could not be handled: " + date_no_whitespace_on_either_side)
+                            logger.error("date could not be handled: " + date_no_whitespace_on_either_side, exc_info=True)
             except AttributeError as ae:
-                if test:
-                    print("no date found ")
+                logger.error("no date found", exc_info=True)
+    logger.info("Imported " + str(len(events)))
     return events
 
 
@@ -138,7 +144,6 @@ def get_weird_json_with_no_more_results():
 if __name__ == '__main__':
     try:
         events = get_events()
-        for event in (events or []):
-            print("Event: " + ''.join(str(event)) + ")")
-    except LookupError as le:
-        print(le)
+        logger.info("Imported " + str(len(events)))
+    except Exception:
+        logger.error(exc_info=True)

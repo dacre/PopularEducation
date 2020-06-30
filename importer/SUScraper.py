@@ -2,13 +2,16 @@
 # -*- coding: UTF-8 -*-
 
 # this gets all events including dates of open seminars at Stockholm University
-
+import logging
 import urllib.request as request
 from bs4 import BeautifulSoup
 import datetime
-
+from importer import event_importer
+import os
 
 scrape_url = "http://www.su.se/om-oss/evenemang/%C3%B6ppna-f%C3%B6rel%C3%A4sningar/2.39658"
+
+logger = logging.getLogger('importer.' + os.path.basename(__file__))
 
 
 def get_likely_year(formatted_date):
@@ -67,18 +70,17 @@ def get_events():
                 "location" : location
             }
             events.append(seminar)
-        except Exception as e:
-            print("ERROR Something went wrong: ", e)
+        except Exception:
+            logger.error("event could not be parsed", exc_info=True)
+    logger.info("Imported " + str(len(events)))
     return events
 
 
 if __name__ == '__main__':
     try:
         events = get_events()
-        if events == "":
-            print("No events found!")
-        else:
-            for event in events:
-                print("Event: " + ''.join(str(event)) + ")")
-    except LookupError as le:
-        print(le.message)
+        logger.info("Imported " + str(len(events)))
+
+    except Exception:
+        logger.error(exc_info=True)
+
