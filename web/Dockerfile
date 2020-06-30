@@ -14,9 +14,11 @@ RUN apk add --no-cache python3 && \
     pip install flask -U bs4
 
 ADD . /web
+ADD . /db
 WORKDIR /web
 COPY /static/* /web/static/
 COPY /images/favicon.png /web/images/
+RUN chmod -R 707 /db/
 USER $APP_USER
 
 EXPOSE 5000
